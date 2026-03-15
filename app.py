@@ -1,4 +1,4 @@
-st.set_page_config(page_title="Scanner Cargos", page_icon="📸")
+
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
