@@ -1,4 +1,3 @@
-import google.generativeai as genai
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import google.generativeai as genai
@@ -6,79 +5,74 @@ from PIL import Image
 import pandas as pd
 from datetime import datetime
 import json
-# Fuerza el uso de la versión estable 
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-# 1. Configuración de la página e Icono
+# 1. Configuración de página e Icono
 st.set_page_config(page_title="Scanner Cargos", page_icon="📸")
 
-# 2. Configuración de API (asegúrate de tener GEMINI_API_KEY en Secrets)
+# 2. Configuración de la IA (Solución al error 404)
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-#  model = genai.GenerativeModel(model_name="gemini-1.5-flash")
-model = genai.GenerativeModel(model_name="gemini-1.5-flash-latest")
+
+# Usamos la versión estable del modelo
+model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+
 # 3. Conexión con Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 st.title("📸 Extractor de Cargos")
 procesador = st.text_input("Procesado por:", "Usuario")
 
-# 4. Selección de origen (Invertimos el orden para que "Galería" sea el defecto)
+# 4. Selección de origen (GALERÍA POR DEFECTO)
 opcion = st.radio("Origen de imagen:", ["Galería/Archivos", "Cámara"], horizontal=True)
 
 if opcion == "Galería/Archivos":
-    # El botón de subir archivos aparecerá primero
-    foto = st.file_uploader("Selecciona el cargo desde tus archivos o fotos", type=["jpg", "jpeg", "png"])
+    foto = st.file_uploader("Selecciona el cargo desde tus fotos", type=["jpg", "jpeg", "png"])
 else:
-    # La cámara solo se encenderá si el usuario cambia la opción manualmente
     foto = st.camera_input("Toma la foto con la cámara")
 
 if foto:
-    # Mostramos una previsualización
     img = Image.open(foto)
     st.image(img, caption="Imagen cargada", width=300)
     
     if st.button("🚀 Procesar y Guardar"):
-        with st.spinner("Leyendo datos..."):
+        with st.spinner("Leyendo datos con IA..."):
             try:
-                # EL FIX: Convertimos la imagen a un formato que Gemini acepte sin errores
+                # Instrucciones precisas para Perú
                 prompt = """
-                Analiza este 'Cargo de Recepción' peruano.
-                Extrae: Nombre, DNI, Cargo, Mesa, Distrito, Direccion, Notas.
-                Responde únicamente con un objeto JSON. Si no encuentras un dato, pon 'No detectado'.
+                Analiza este 'Cargo de Recepción'. Extrae los datos y responde 
+                SOLO con un objeto JSON con estas llaves:
+                "Nombre", "DNI", "Cargo", "Mesa", "Distrito", "Direccion", "Notas".
+                Si no ves algo, pon "N/A".
                 """
                 
-                # Enviamos la imagen directamente
+                # Generar contenido
                 response = model.generate_content([prompt, img])
                 
-                # Limpiamos la respuesta para obtener el JSON
-                texto_respuesta = response.text.replace('```json', '').replace('```', '').strip()
-                datos_json = json.loads(texto_respuesta)
+                # Limpiar la respuesta (quitar ```json si la IA los pone)
+                res_text = response.text.replace('```json', '').replace('```', '').strip()
+                datos_json = json.loads(res_text)
                 
                 # 5. Guardar en Google Sheets
-                # Leemos lo que ya existe
-                df_existente = conn.read(worksheet="Sheet1") # Ajusta al nombre de tu hoja
+                # IMPORTANTE: Verifica que tu hoja se llame "Sheet1" o cámbialo aquí
+                df_existente = conn.read(worksheet="Sheet1")
                 
-                # Creamos la nueva fila
                 nuevo_registro = {
                     "Fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
                     "Procesador": procesador,
-                    "Nombre": datos_json.get("Nombre"),
-                    "DNI": datos_json.get("DNI"),
-                    "Cargo": datos_json.get("Cargo"),
-                    "Mesa": datos_json.get("Mesa"),
-                    "Distrito": datos_json.get("Distrito"),
-                    "Direccion": datos_json.get("Direccion"),
-                    "Notas": datos_json.get("Notas")
+                    "Nombre": datos_json.get("Nombre", "N/A"),
+                    "DNI": datos_json.get("DNI", "N/A"),
+                    "Cargo": datos_json.get("Cargo", "N/A"),
+                    "Mesa": datos_json.get("Mesa", "N/A"),
+                    "Distrito": datos_json.get("Distrito", "N/A"),
+                    "Direccion": datos_json.get("Direccion", "N/A"),
+                    "Notas": datos_json.get("Notas", "N/A")
                 }
                 
-                # Concatenamos y actualizamos
                 df_final = pd.concat([df_existente, pd.DataFrame([nuevo_registro])], ignore_index=True)
                 conn.update(worksheet="Sheet1", data=df_final)
                 
-                st.success("✅ Guardado en Google Sheets con éxito")
-                st.json(datos_json) # Muestra lo que leyó
+                st.success("✅ ¡Guardado en Google Sheets!")
+                st.json(datos_json)
                 st.balloons()
                 
             except Exception as e:
-                st.error(f"Hubo un detalle: {e}")
-                st.info("Tip: Asegúrate de que la foto sea clara y que el API Key esté bien configurado.")
+                st.error(f"Detalle técnico: {e}")
