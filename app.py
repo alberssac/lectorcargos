@@ -10,7 +10,8 @@ genai.configure(api_key="TU_GEMINI_API_KEY")
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 st.title("📸 Extractor de Cargos - Pro")
-procesador = st.text_input("Nombre del Procesador", "Usuario Principal")
+st.set_page_config(page_title="Scanner Cargos", page_icon="📸")
+procesador = st.text_input("Nombre del RLV", "Usuario Principal")
 
 
 
