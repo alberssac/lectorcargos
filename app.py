@@ -20,8 +20,7 @@ for m in genai.list_models():
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # Usamos la versión estable del modelo
-model = genai.GenerativeModel(model_name="gemini-1.5-flash")
-
+model = genai.GenerativeModel(model_name="models/gemini-2.0-flash")
 # 3. Conexión con Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
 
