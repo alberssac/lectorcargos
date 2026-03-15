@@ -22,13 +22,15 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 st.title("📸 Extractor de Cargos")
 procesador = st.text_input("Procesado por:", "Usuario")
 
-# 4. Selección de origen
-opcion = st.radio("Origen de imagen:", ["Cámara", "Galería/Archivos"], horizontal=True)
+# 4. Selección de origen (Invertimos el orden para que "Galería" sea el defecto)
+opcion = st.radio("Origen de imagen:", ["Galería/Archivos", "Cámara"], horizontal=True)
 
-if opcion == "Cámara":
-    foto = st.camera_input("Toma la foto")
+if opcion == "Galería/Archivos":
+    # El botón de subir archivos aparecerá primero
+    foto = st.file_uploader("Selecciona el cargo desde tus archivos o fotos", type=["jpg", "jpeg", "png"])
 else:
-    foto = st.file_uploader("Sube el archivo", type=["jpg", "jpeg", "png"])
+    # La cámara solo se encenderá si el usuario cambia la opción manualmente
+    foto = st.camera_input("Toma la foto con la cámara")
 
 if foto:
     # Mostramos una previsualización
