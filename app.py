@@ -9,6 +9,13 @@ import json
 # 1. Configuración de página e Icono
 st.set_page_config(page_title="Scanner Cargos", page_icon="📸")
 
+st.write("### Modelos disponibles para tu API Key:")
+
+# Esta es la función que pide el error:
+for m in genai.list_models():
+    if 'generateContent' in m.supported_generation_methods:
+        st.write(f"Nombre: `{m.name}`")
+
 # 2. Configuración de la IA (Solución al error 404)
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
