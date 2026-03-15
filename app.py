@@ -12,9 +12,16 @@ model = genai.GenerativeModel('gemini-1.5-flash')
 st.title("📸 Extractor de Cargos - Pro")
 procesador = st.text_input("Nombre del Procesador", "Usuario Principal")
 
-# Captura de imagen desde iPhone
-foto = st.camera_input("Toma una foto del cargo")
 
+
+# Crea dos pestañas o una opción para elegir el origen
+opcion = st.radio("Selecciona origen de la imagen:", ["Cámara", "Galería/Archivos"])
+
+if opcion == "Cámara": # Captura de imagen desde iPhone
+    foto = st.camera_input("Toma una foto del cargo")
+else:
+    foto = st.file_uploader("Selecciona la foto desde tus archivos o galería", type=["jpg", "jpeg", "png"]) # Si quieres subir varias fotos a la vez, el st.file_uploader 
+    #permite una opción llamada accept_multiple_files=True. Esto te permitiría seleccionar 10 fotos de cargos y que la IA las procese una tras otra
 if foto:
     img = Image.open(foto)
     st.image(img, caption="Imagen capturada", width=300)
