@@ -1,3 +1,4 @@
+import google.generativeai as genai
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import google.generativeai as genai
@@ -5,13 +6,16 @@ from PIL import Image
 import pandas as pd
 from datetime import datetime
 import json
+# Fuerza el uso de la versión estable 
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # 1. Configuración de la página e Icono
 st.set_page_config(page_title="Scanner Cargos", page_icon="📸")
 
 # 2. Configuración de API (asegúrate de tener GEMINI_API_KEY en Secrets)
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
+model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+
 # 3. Conexión con Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
 
