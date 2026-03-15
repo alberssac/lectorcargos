@@ -11,7 +11,7 @@ st.set_page_config(page_title="Scanner Cargos", page_icon="📸")
 
 # 2. Configuración de API (asegúrate de tener GEMINI_API_KEY en Secrets)
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel(model_name="gemini-1.5-flash-latest")
 
 # 3. Conexión con Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
